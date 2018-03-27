@@ -14,36 +14,12 @@ class Patient:
         """
 
         self._id = id
-        # random number generator for this patient
-        self._rng = rndClasses.RNG(self._id)
-        # parameters
-        self._param = parameters
-        # state monitor
-        self._stateMonitor = PatientStateMonitor(parameters)
-        # simulation time step
-        self._delta_t = parameters.get_delta_t()
+
 
     def simulate(self, sim_length):
         """ simulate the patient over the specified simulation length """
 
-        k = 0  # current time step
 
-        # while the patient is alive and simulation length is not yet reached
-        while self._stateMonitor.get_if_alive() and k*self._delta_t < sim_length:
-
-            # find the transition probabilities of the future states
-            trans_probs = self._param.get_transition_prob(self._stateMonitor.get_current_state())
-            # create an empirical distribution
-            empirical_dist = rndClasses.Empirical(trans_probs)
-            # sample from the empirical distribution to get a new state
-            # (returns an integer from {0, 1, 2, ...})
-            new_state_index = empirical_dist.sample(self._rng)
-
-            # update health state
-            self._stateMonitor.update(k, P.HealthStats(new_state_index))
-
-            # increment time step
-            k += 1
 
     def get_survival_time(self):
         """ returns the patient's survival time"""
@@ -60,11 +36,7 @@ class PatientStateMonitor:
         """
         :param parameters: patient parameters
         """
-        self._currentState = parameters.get_initial_health_state() # current health state
-        self._delta_t = parameters.get_delta_t()    # simulation time step
-        self._survivalTime = 0          # survival time
-        self._timeToAIDS = 0        # time to develop AIDS
-        self._ifDevelopedAIDS = False   # if the patient developed AIDS
+
 
     def update(self, k, next_state):
         """
@@ -72,21 +44,7 @@ class PatientStateMonitor:
         :param next_state: next state
         """
 
-        # if the patient has died, do nothing
-        if not self.get_if_alive():
-            return
 
-        # update survival time
-        if next_state == P.HealthStats.HIV_DEATH:
-            self._survivalTime = (k+0.5)*self._delta_t  # corrected for the half-cycle effect
-
-        # update time until AIDS
-        if self._currentState != P.HealthStats.AIDS and next_state == P.HealthStats.AIDS:
-            self._ifDevelopedAIDS = True
-            self._timeToAIDS = (k + 0.5) * self._delta_t  # corrected for the half-cycle effect
-
-        # update current health state
-        self._currentState = next_state
 
     def get_if_alive(self):
         result = True

@@ -65,28 +65,10 @@ class ParametersFixed():
     def get_transition_prob(self, state):
         return self._prob_matrix[state.value]
 
+
 def calculate_prob_matrix():
     """ :returns transition probability matrix for hiv states under mono therapy"""
 
-    # create an empty matrix populated with zeroes
-    prob_matrix = []
-    for s in HealthStats:
-        prob_matrix.append([0] * len(HealthStats))
-
-    # for all health states
-    for s in HealthStats:
-        # if the current state is death
-        if s == HealthStats.HIV_DEATH:
-            # the probability of staying in this state is 1
-            prob_matrix[s.value][s.value] = 1
-        else:
-            # calculate total counts of individuals
-            sum_prob = sum(Data.TRANS_MATRIX[s.value])
-            # calculate the transition probabilities out of this state
-            for j in range(s.value, HealthStats.HIV_DEATH.value+1):
-                prob_matrix[s.value][j] = Data.TRANS_MATRIX[s.value][j] / sum_prob
-
-    return prob_matrix
 
 
 def calculate_prob_matrix_combo(matrix_mono, combo_rr):
@@ -95,20 +77,4 @@ def calculate_prob_matrix_combo(matrix_mono, combo_rr):
     :param combo_rr: relative risk of the combination treatment
     :returns (list of lists) transition probability matrix under combination therapy """
 
-    # create an empty list of lists
-    matrix_combo = []
-    for l in matrix_mono:
-        matrix_combo.append([0] * len(l))
 
-    # populate the combo matrix
-    # first non-diagonal elements
-    for s in HealthStats:
-        for next_s in range(s.value + 1, len(HealthStats)):
-            matrix_combo[s.value][next_s] = combo_rr * matrix_mono[s.value][next_s]
-
-    # diagonal elements are calculated to make sure the sum of each row is 1
-    for s in HealthStats:
-        if s != HealthStats.HIV_DEATH:
-            matrix_combo[s.value][s.value] = 1 - sum(matrix_combo[s.value][s.value + 1:])
-
-    return matrix_combo
