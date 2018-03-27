@@ -53,14 +53,6 @@ class Patient:
         """ returns the patient's time to AIDS """
         return self._stateMonitor.get_time_to_AIDS()
 
-    def get_total_discounted_cost(self):
-        """ :returns total discounted cost """
-        return self._stateMonitor.get_total_discounted_cost()
-
-    def get_total_discounted_utility(self):
-        """ :returns total discounted utility"""
-        return self._stateMonitor.get_total_discounted_utility()
-
 
 class PatientStateMonitor:
     """ to update patient outcomes (years survived, cost, etc.) throughout the simulation """
@@ -74,9 +66,6 @@ class PatientStateMonitor:
         self._timeToAIDS = 0        # time to develop AIDS
         self._ifDevelopedAIDS = False   # if the patient developed AIDS
 
-        # monitoring cost and utility outcomes
-        self._costUtilityOutcomes = PatientCostUtilityMonitor(parameters)
-
     def update(self, k, next_state):
         """
         :param k: current time step
@@ -88,7 +77,7 @@ class PatientStateMonitor:
             return
 
         # update survival time
-        if next_state in [P.HealthStats.HIV_DEATH, P.HealthStats.BACKGROUND_DEATH]:
+        if next_state == P.HealthStats.HIV_DEATH:
             self._survivalTime = (k+0.5)*self._delta_t  # corrected for the half-cycle effect
 
         # update time until AIDS
@@ -96,15 +85,12 @@ class PatientStateMonitor:
             self._ifDevelopedAIDS = True
             self._timeToAIDS = (k + 0.5) * self._delta_t  # corrected for the half-cycle effect
 
-        # collect cost and utility outcomes
-        self._costUtilityOutcomes.update(k, self._currentState, next_state)
-
         # update current health state
         self._currentState = next_state
 
     def get_if_alive(self):
         result = True
-        if self._currentState in [P.HealthStats.HIV_DEATH, P.HealthStats.BACKGROUND_DEATH]:
+        if self._currentState == P.HealthStats.HIV_DEATH:
             result = False
         return result
 
@@ -127,61 +113,6 @@ class PatientStateMonitor:
         else:
             return None
 
-    def get_total_discounted_cost(self):
-        """ :returns total discounted cost """
-        return self._costUtilityOutcomes.get_total_discounted_cost()
-
-    def get_total_discounted_utility(self):
-        """ :returns total discounted utility"""
-        return self._costUtilityOutcomes.get_total_discounted_utility()
-
-
-class PatientCostUtilityMonitor:
-
-    def __init__(self, parameters):
-
-        # model parameters for this patient
-        self._param = parameters
-
-        # total cost and utility
-        self._totalDiscountedCost = 0
-        self._totalDiscountedUtility = 0
-
-    def update(self, k, current_state, next_state):
-        """ updates the discounted total cost and health utility
-        :param k: simulation time step
-        :param current_state: current health state
-        :param next_state: next health state
-        """
-
-        # update cost
-        cost = 0.5 * (self._param.get_annual_state_cost(current_state) +
-                      self._param.get_annual_state_cost(next_state)) * self._param.get_delta_t()
-        # update utility
-        utility = 0.5 * (self._param.get_annual_state_utility(current_state) +
-                         self._param.get_annual_state_utility(next_state)) * self._param.get_delta_t()
-
-        # add the cost of treatment
-        # if HIV death will occur
-        if next_state in [P.HealthStats.HIV_DEATH, P.HealthStats.BACKGROUND_DEATH]:
-            cost += 0.5 * self._param.get_annual_treatment_cost() * self._param.get_delta_t()
-        else:
-            cost += 1 * self._param.get_annual_treatment_cost() * self._param.get_delta_t()
-
-        # update total discounted cost and utility (corrected for the half-cycle effect)
-        self._totalDiscountedCost += \
-            EconCls.pv(cost, self._param.get_adj_discount_rate() / 2, 2*k + 1)
-        self._totalDiscountedUtility += \
-            EconCls.pv(utility, self._param.get_adj_discount_rate() / 2, 2*k + 1)
-
-    def get_total_discounted_cost(self):
-        """ :returns total discounted cost """
-        return self._totalDiscountedCost
-
-    def get_total_discounted_utility(self):
-        """ :returns total discounted utility"""
-        return  self._totalDiscountedUtility
-
 
 class Cohort:
     def __init__(self, id, therapy):
@@ -194,10 +125,7 @@ class Cohort:
         # populate the cohort
         for i in range(self._initial_pop_size):
             # create a new patient (use id * pop_size + i as patient id)
-            if Data.PSA_ON:
-                patient = Patient(id * self._initial_pop_size + i, P.ParametersProbabilistic(i, therapy))
-            else:
-                patient = Patient(id * self._initial_pop_size + i, P.ParametersFixed(therapy))
+            patient = Patient(id * self._initial_pop_size + i, P.ParametersFixed(therapy))
             # add the patient to the cohort
             self._patients.append(patient)
 
@@ -249,15 +177,9 @@ class CohortOutputs:
             if not (time_to_AIDS is None):
                 self._times_to_AIDS.append(time_to_AIDS)
 
-            # cost and utility
-            self._costs.append(patient.get_total_discounted_cost())
-            self._utilities.append(patient.get_total_discounted_utility())
-
         # summary statistics
         self._sumStat_survivalTime = StatCls.SummaryStat('Patient survival time', self._survivalTimes)
         self._sumState_timeToAIDS = StatCls.SummaryStat('Time until AIDS', self._times_to_AIDS)
-        self._sumStat_cost = StatCls.SummaryStat('Patient discounted cost', self._costs)
-        self._sumStat_utility = StatCls.SummaryStat('Patient discounted utility', self._utilities)
 
     def get_survival_times(self):
         return self._survivalTimes
@@ -265,23 +187,11 @@ class CohortOutputs:
     def get_times_to_AIDS(self):
         return self._times_to_AIDS
 
-    def get_costs(self):
-        return self._costs
-
-    def get_utilities(self):
-        return self._utilities
-
     def get_sumStat_survival_times(self):
         return self._sumStat_survivalTime
 
     def get_sumStat_time_to_AIDS(self):
         return self._sumState_timeToAIDS
-
-    def get_sumStat_discounted_cost(self):
-        return self._sumStat_cost
-
-    def get_sumStat_discounted_utility(self):
-        return self._sumStat_utility
 
     def get_survival_curve(self):
         return self._survivalCurve
