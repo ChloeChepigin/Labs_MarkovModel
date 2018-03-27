@@ -156,8 +156,6 @@ class CohortOutputs:
 
         self._survivalTimes = []        # patients' survival times
         self._times_to_AIDS = []        # patients' times to AIDS
-        self._costs = []                # patients' discounted total costs
-        self._utilities =[]             # patients' discounted total utilities
 
         # survival curve
         self._survivalCurve = \
