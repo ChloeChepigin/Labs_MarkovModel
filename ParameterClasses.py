@@ -22,8 +22,7 @@ class Therapies(Enum):
     COMBO = 1
 
 
-class _Parameters:
-
+class ParametersFixed():
     def __init__(self, therapy):
 
         # selected therapy
@@ -46,22 +45,6 @@ class _Parameters:
         # treatment relative risk
         self._treatmentRR = 0
 
-    def get_initial_health_state(self):
-        return self._initialHealthState
-
-    def get_delta_t(self):
-        return self._delta_t
-
-    def get_transition_prob(self, state):
-        return self._prob_matrix[state.value]
-
-
-class ParametersFixed(_Parameters):
-    def __init__(self, therapy):
-
-        # initialize the base class
-        _Parameters.__init__(self, therapy)
-
         # calculate transition probabilities between hiv states
         self._prob_matrix = calculate_prob_matrix()
 
@@ -73,6 +56,14 @@ class ParametersFixed(_Parameters):
             self._prob_matrix = calculate_prob_matrix_combo(
                 matrix_mono=self._prob_matrix, combo_rr=Data.TREATMENT_RR)
 
+    def get_initial_health_state(self):
+        return self._initialHealthState
+
+    def get_delta_t(self):
+        return self._delta_t
+
+    def get_transition_prob(self, state):
+        return self._prob_matrix[state.value]
 
 def calculate_prob_matrix():
     """ :returns transition probability matrix for hiv states under mono therapy"""
