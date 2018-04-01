@@ -65,6 +65,7 @@ class ParametersFixed():
     def get_transition_prob(self, state):
         return self._prob_matrix[state.value]
 
+
 def calculate_prob_matrix():
     """ :returns transition probability matrix for hiv states under mono therapy"""
 
