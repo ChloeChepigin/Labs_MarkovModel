@@ -26,6 +26,3 @@ def print_outcomes(simOutput, therapy_name):
     print("  Estimate of mean time to AIDS and {:.{prec}%} confidence interval:".format(1 - Settings.ALPHA, prec=0),
           time_to_HIV_death_CI_text)
     print("")
-
-
-
