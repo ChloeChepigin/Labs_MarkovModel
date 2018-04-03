@@ -4,11 +4,7 @@ POP_SIZE = 1000     # cohort population size
 SIM_LENGTH = 100    # length of simulation (years)
 ALPHA = 0.05        # significance level for calculating confidence intervals
 DISCOUNT = 0.03     # annual discount rate
-
-ADD_BACKGROUND_MORT = True  # if background mortality should be added
-DELTA_T = 1/4       # years
-
-PSA_ON = True      # if probabilistic sensitivity analysis is on
+DELTA_T = 1       # years
 
 # transition matrix
 TRANS_MATRIX = [
@@ -39,6 +35,4 @@ Lamivudine_COST = 2086.0
 TREATMENT_RR = 0.509
 TREATMENT_RR_CI = 0.365, 0.71  # lower 95% CI, upper 95% CI
 
-# annual probability of background mortality (number per year per 1,000 population)
-ANNUAL_PROB_BACKGROUND_MORT = 8.15 / 1000
 

@@ -91,7 +91,7 @@ class PatientStateMonitor:
             return
 
         # update survival time
-        if next_state in [P.HealthStats.HIV_DEATH, P.HealthStats.BACKGROUND_DEATH]:
+        if next_state in [P.HealthStats.HIV_DEATH]:
             self._survivalTime = (k+0.5)*self._delta_t  # corrected for the half-cycle effect
 
         # update time until AIDS
@@ -107,7 +107,7 @@ class PatientStateMonitor:
 
     def get_if_alive(self):
         result = True
-        if self._currentState in [P.HealthStats.HIV_DEATH, P.HealthStats.BACKGROUND_DEATH]:
+        if self._currentState in [P.HealthStats.HIV_DEATH]:
             result = False
         return result
 
@@ -166,7 +166,7 @@ class PatientCostUtilityMonitor:
 
         # add the cost of treatment
         # if HIV death will occur
-        if next_state in [P.HealthStats.HIV_DEATH, P.HealthStats.BACKGROUND_DEATH]:
+        if next_state in [P.HealthStats.HIV_DEATH]:
             cost += 0.5 * self._param.get_annual_treatment_cost() * self._param.get_delta_t()
         else:
             cost += 1 * self._param.get_annual_treatment_cost() * self._param.get_delta_t()
@@ -197,10 +197,7 @@ class Cohort:
         # populate the cohort
         for i in range(self._initial_pop_size):
             # create a new patient (use id * pop_size + i as patient id)
-            if Data.PSA_ON:
-                patient = Patient(id * self._initial_pop_size + i, P.ParametersProbabilistic(i, therapy))
-            else:
-                patient = Patient(id * self._initial_pop_size + i, P.ParametersFixed(therapy))
+            patient = Patient(id * self._initial_pop_size + i, P.ParametersFixed(therapy))
             # add the patient to the cohort
             self._patients.append(patient)
 
