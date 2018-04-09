@@ -14,7 +14,7 @@ simOutputs_mono = cohort_mono.simulate()
 # simulating combination therapy
 # create a cohort
 cohort_combo = MarkovCls.Cohort(
-    id=0,
+    id=1,
     therapy=P.Therapies.COMBO)
 # simulate the cohort
 simOutputs_combo = cohort_combo.simulate()
@@ -30,4 +30,4 @@ SupportMarkov.print_outcomes(simOutputs_combo, "Combination Therapy:")
 SupportMarkov.print_comparative_outcomes(simOutputs_mono, simOutputs_combo)
 
 # report the CEA results
-SupportMarkov.report_CEA(simOutputs_mono, simOutputs_combo)
+SupportMarkov.report_CEA_CBA(simOutputs_mono, simOutputs_combo)
