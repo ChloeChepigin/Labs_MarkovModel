@@ -158,24 +158,16 @@ class PatientCostUtilityMonitor:
         """
 
         # update cost
-        cost = 0.5 * (self._param.get_annual_state_cost(current_state) +
-                      self._param.get_annual_state_cost(next_state)) * self._param.get_delta_t()
+
         # update utility
-        utility = 0.5 * (self._param.get_annual_state_utility(current_state) +
-                         self._param.get_annual_state_utility(next_state)) * self._param.get_delta_t()
+
 
         # add the cost of treatment
         # if HIV death will occur
-        if next_state in [P.HealthStats.HIV_DEATH]:
-            cost += 0.5 * self._param.get_annual_treatment_cost() * self._param.get_delta_t()
-        else:
-            cost += 1 * self._param.get_annual_treatment_cost() * self._param.get_delta_t()
+
 
         # update total discounted cost and utility (corrected for the half-cycle effect)
-        self._totalDiscountedCost += \
-            EconCls.pv(cost, self._param.get_adj_discount_rate() / 2, 2*k + 1)
-        self._totalDiscountedUtility += \
-            EconCls.pv(utility, self._param.get_adj_discount_rate() / 2, 2*k + 1)
+
 
     def get_total_discounted_cost(self):
         """ :returns total discounted cost """
